@@ -14,33 +14,35 @@ enum Role {
 }
 
 enum TaskStatus {
-  PENDING
-  PROCESSED
+  PENDING_ADMIN
+  PROCESSED_READY
+  DOWNLOADED
 }
 
 model User {
-  id           String   @id @default(uuid())
-  name         String
-  email        String   @unique
-  passwordHash String   @map("password_hash")
-  role         Role     @default(USER)
-  createdAt    DateTime @default(now()) @map("created_at")
-  tasks        Task[]
+  id            String   @id @default(uuid())
+  name          String
+  email         String   @unique
+  passwordHash  String   @map("password_hash")
+  role          Role     @default(USER)
+  createdAt     DateTime @default(now()) @map("created_at")
+  sentTasks     Task[]   @relation("TaskSender")
+  receivedTasks Task[]   @relation("TaskReceiver")
 
   @@map("users")
 }
 
 model Task {
   id               String     @id @default(uuid())
-  userId           String     @map("user_id")
+  senderId         String     @map("sender_id")
+  receiverId       String     @map("receiver_id")
   originalImageUrl String     @map("original_image_url")
-  originalFileName String     @default("image.png") @map("original_file_name")
   memFileUrl       String?    @map("mem_file_url")
   cipherKey        String?    @map("cipher_key")
-  status           TaskStatus @default(PENDING)
+  status           TaskStatus @default(PENDING_ADMIN)
   createdAt        DateTime   @default(now()) @map("created_at")
-  updatedAt        DateTime   @updatedAt @map("updated_at")
-  user             User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sender           User       @relation("TaskSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver         User       @relation("TaskReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
 
   @@map("tasks")
 }

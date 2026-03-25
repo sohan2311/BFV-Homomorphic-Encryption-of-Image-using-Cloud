@@ -20,15 +20,16 @@ import {
 
 interface Task {
     id: string;
-    userId: string;
-    originalFileName: string;
     originalImageUrl: string;
     memFileUrl: string | null;
     cipherKey: string | null;
-    status: 'PENDING' | 'PROCESSED';
+    status: 'PENDING_ADMIN' | 'PROCESSED_READY' | 'DOWNLOADED';
     createdAt: string;
-    updatedAt: string;
-    user: {
+    sender: {
+        name: string;
+        email: string;
+    };
+    receiver: {
         name: string;
         email: string;
     };
@@ -41,7 +42,7 @@ export default function AdminDashboard() {
     const [fulfilling, setFulfilling] = useState(false);
     const [cipherKeyInput, setCipherKeyInput] = useState('');
     const [memFileInput, setMemFileInput] = useState<File | null>(null);
-    const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'PROCESSED'>('ALL');
+    const [filter, setFilter] = useState<'ALL' | 'PENDING_ADMIN' | 'PROCESSED_READY' | 'DOWNLOADED'>('ALL');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const fetchTasks = async () => {
@@ -71,7 +72,7 @@ export default function AdminDashboard() {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = task.originalFileName;
+            a.download = `raw_image_${task.id.slice(0, 8)}.png`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -135,6 +136,13 @@ export default function AdminDashboard() {
         return t.status === filter;
     });
 
+    // Count unique users across both roles
+    const uniqueUsersSet = new Set<string>();
+    tasks.forEach(t => {
+        uniqueUsersSet.add(t.sender.email);
+        uniqueUsersSet.add(t.receiver.email);
+    });
+
     if (loading) {
         return (
             <div className="flex items-center justify-center py-20">
@@ -159,7 +167,7 @@ export default function AdminDashboard() {
                     </div>
                     <div>
                         <h1 className="text-2xl font-bold" style={{ color: '#0f172a' }}>Admin Hub</h1>
-                        <p className="text-sm" style={{ color: '#334155' }}>Manage all encryption tasks across the platform</p>
+                        <p className="text-sm" style={{ color: '#334155' }}>Manage sender-receiver payloads across the platform</p>
                     </div>
                 </div>
                 <button
@@ -194,9 +202,9 @@ export default function AdminDashboard() {
                         </div>
                         <div>
                             <p className="text-2xl font-bold mono-text" style={{ color: '#0f172a' }}>
-                                {tasks.filter((t) => t.status === 'PENDING').length}
+                                {tasks.filter((t) => t.status === 'PENDING_ADMIN').length}
                             </p>
-                            <p className="text-xs" style={{ color: '#334155' }}>Pending</p>
+                            <p className="text-xs" style={{ color: '#334155' }}>Pending Processing</p>
                         </div>
                     </div>
                 </div>
@@ -207,9 +215,22 @@ export default function AdminDashboard() {
                         </div>
                         <div>
                             <p className="text-2xl font-bold mono-text" style={{ color: '#0f172a' }}>
-                                {tasks.filter((t) => t.status === 'PROCESSED').length}
+                                {tasks.filter((t) => t.status === 'PROCESSED_READY').length}
                             </p>
-                            <p className="text-xs" style={{ color: '#334155' }}>Processed</p>
+                            <p className="text-xs" style={{ color: '#334155' }}>Processed Ready</p>
+                        </div>
+                    </div>
+                </div>
+                <div className="glass-card p-5">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(59, 130, 246, 0.08)' }}>
+                            <Download className="w-4 h-4" style={{ color: '#2563eb' }} />
+                        </div>
+                        <div>
+                            <p className="text-2xl font-bold mono-text" style={{ color: '#0f172a' }}>
+                                {tasks.filter((t) => t.status === 'DOWNLOADED').length}
+                            </p>
+                            <p className="text-xs" style={{ color: '#334155' }}>Fully Downloaded</p>
                         </div>
                     </div>
                 </div>
@@ -220,9 +241,9 @@ export default function AdminDashboard() {
                         </div>
                         <div>
                             <p className="text-2xl font-bold mono-text" style={{ color: '#0f172a' }}>
-                                {new Set(tasks.map((t) => t.userId)).size}
+                                {uniqueUsersSet.size}
                             </p>
-                            <p className="text-xs" style={{ color: '#334155' }}>Unique Users</p>
+                            <p className="text-xs" style={{ color: '#334155' }}>Platform Users Actv</p>
                         </div>
                     </div>
                 </div>
@@ -230,7 +251,7 @@ export default function AdminDashboard() {
 
             {/* Filter tabs */}
             <div className="flex items-center gap-2 mb-6">
-                {(['ALL', 'PENDING', 'PROCESSED'] as const).map((f) => (
+                {(['ALL', 'PENDING_ADMIN', 'PROCESSED_READY', 'DOWNLOADED'] as const).map((f) => (
                     <button
                         key={f}
                         onClick={() => setFilter(f)}
@@ -240,18 +261,19 @@ export default function AdminDashboard() {
                             }`}
                         style={{
                             background: filter === f
-                                ? f === 'PENDING' ? 'rgba(245, 158, 11, 0.15)' : f === 'PROCESSED' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(6, 182, 212, 0.15)'
+                                ? f === 'PENDING_ADMIN' ? 'rgba(245, 158, 11, 0.15)' : f === 'PROCESSED_READY' ? 'rgba(16, 185, 129, 0.15)' : f === 'DOWNLOADED' ? 'rgba(59, 130, 246, 0.15)' : 'rgba(6, 182, 212, 0.15)'
                                 : 'rgba(241, 245, 249, 1)',
                             color: filter === f
-                                ? f === 'PENDING' ? '#d97706' : f === 'PROCESSED' ? '#059669' : '#0891b2'
+                                ? f === 'PENDING_ADMIN' ? '#d97706' : f === 'PROCESSED_READY' ? '#059669' : f === 'DOWNLOADED' ? '#2563eb' : '#0891b2'
                                 : '#334155',
                             border: `1px solid ${filter === f
-                                    ? f === 'PENDING' ? 'rgba(245, 158, 11, 0.3)' : f === 'PROCESSED' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(6, 182, 212, 0.3)'
+                                    ? f === 'PENDING_ADMIN' ? 'rgba(245, 158, 11, 0.3)' : f === 'PROCESSED_READY' ? 'rgba(16, 185, 129, 0.3)' : f === 'DOWNLOADED' ? 'rgba(59, 130, 246, 0.3)' : 'rgba(6, 182, 212, 0.3)'
                                     : 'transparent'
                                 }`,
                         }}
                     >
-                        {f} ({f === 'ALL' ? tasks.length : tasks.filter((t) => t.status === f).length})
+                        {f === 'PENDING_ADMIN' ? 'PENDING' : f === 'PROCESSED_READY' ? 'PROCESSED' : f === 'DOWNLOADED' ? 'DOWNLOADED' : 'ALL'} 
+                        ({f === 'ALL' ? tasks.length : tasks.filter((t) => t.status === f).length})
                     </button>
                 ))}
             </div>
@@ -272,9 +294,8 @@ export default function AdminDashboard() {
                             <thead>
                                 <tr>
                                     <th>Task ID</th>
-                                    <th>User</th>
-                                    <th>Email</th>
-                                    <th>File</th>
+                                    <th>Sender</th>
+                                    <th>Receiver</th>
                                     <th>Status</th>
                                     <th>Created</th>
                                     <th>Actions</th>
@@ -289,30 +310,40 @@ export default function AdminDashboard() {
                                             </span>
                                         </td>
                                         <td>
-                                            <span className="text-sm font-medium" style={{ color: '#0f172a' }}>
-                                                {task.user.name}
-                                            </span>
+                                            <div className="flex flex-col">
+                                                <span className="text-sm font-medium" style={{ color: '#0f172a' }}>
+                                                    {task.sender.name}
+                                                </span>
+                                                <span className="text-[10px] mono-text" style={{ color: '#475569' }}>
+                                                    {task.sender.email}
+                                                </span>
+                                            </div>
                                         </td>
                                         <td>
-                                            <span className="text-xs mono-text" style={{ color: '#334155' }}>
-                                                {task.user.email}
-                                            </span>
+                                            <div className="flex flex-col">
+                                                <span className="text-sm font-medium" style={{ color: '#0f172a' }}>
+                                                    {task.receiver.name}
+                                                </span>
+                                                <span className="text-[10px] mono-text" style={{ color: '#475569' }}>
+                                                    {task.receiver.email}
+                                                </span>
+                                            </div>
                                         </td>
                                         <td>
-                                            <span className="text-sm" style={{ color: '#475569' }}>
-                                                {task.originalFileName}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            {task.status === 'PENDING' ? (
+                                            {task.status === 'PENDING_ADMIN' ? (
                                                 <span className="badge badge-pending">
                                                     <Clock className="w-3 h-3" />
                                                     Pending
                                                 </span>
-                                            ) : (
+                                            ) : task.status === 'PROCESSED_READY' ? (
                                                 <span className="badge badge-processed">
                                                     <CheckCircle className="w-3 h-3" />
                                                     Done
+                                                </span>
+                                            ) : (
+                                                <span className="badge" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#2563eb' }}>
+                                                    <Download className="w-3 h-3" />
+                                                    Downloaded
                                                 </span>
                                             )}
                                         </td>
@@ -330,7 +361,7 @@ export default function AdminDashboard() {
                                                     <Download className="w-3 h-3" />
                                                     Image
                                                 </button>
-                                                {task.status === 'PENDING' && (
+                                                {task.status === 'PENDING_ADMIN' && (
                                                     <button
                                                         onClick={() => {
                                                             setFulfillTaskId(task.id);
@@ -343,8 +374,11 @@ export default function AdminDashboard() {
                                                         Fulfill
                                                     </button>
                                                 )}
-                                                {task.status === 'PROCESSED' && (
+                                                {task.status === 'PROCESSED_READY' && (
                                                     <span className="text-xs" style={{ color: '#059669' }}>✓ Fulfilled</span>
+                                                )}
+                                                {task.status === 'DOWNLOADED' && (
+                                                    <span className="text-xs" style={{ color: '#2563eb' }}>✓ Downloaded</span>
                                                 )}
                                             </div>
                                         </td>

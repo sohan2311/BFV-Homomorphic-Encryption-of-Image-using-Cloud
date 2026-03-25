@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { Shield, Mail, Lock, ArrowRight, Fingerprint, Activity, Eye, EyeOff } from 'lucide-react';
+import PlatformDetails from '@/components/PlatformDetails';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -38,8 +39,10 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex bg-slate-50/50">
-            {/* Left Panel - Branding */}
+        <div className="min-h-screen flex flex-col bg-slate-50/50">
+            {/* Top Auth Section */}
+            <div className="flex bg-white min-h-screen">
+                {/* Left Panel - Branding */}
             <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center bg-white border-r border-slate-200/60 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
                 <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGRlZnM+PHBhdHRlcm4gaWQ9ImEiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdHRlcm4gaWQ9ImIiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMTQsIDE2NSwgMjMzLCAwLjA1KSIvPjwvcGF0dGVybj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIGZpbGw9InVybCgjYikiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjYSkiLz48L3N2Zz4=')] opacity-50" />
 
@@ -171,6 +174,10 @@ export default function LoginPage() {
                     </div>
                 </div>
             </div>
+            </div>
+
+            {/* Platform Details Footer */}
+            <PlatformDetails />
         </div>
     );
 }

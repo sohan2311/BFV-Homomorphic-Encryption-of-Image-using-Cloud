@@ -65,7 +65,7 @@ export async function POST(
             data: {
                 memFileUrl,
                 cipherKey: cipherKey || task.cipherKey,
-                status: 'PROCESSED',
+                status: 'PROCESSED_READY',
             },
         });
 

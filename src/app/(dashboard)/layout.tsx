@@ -13,6 +13,7 @@ import {
     Cpu,
     ChevronRight,
 } from 'lucide-react';
+import PlatformDetails from '@/components/PlatformDetails';
 
 export default function DashboardLayout({
     children,
@@ -49,7 +50,7 @@ export default function DashboardLayout({
 
     const userLinks = [
         { href: '/user/upload', label: 'Upload Image', icon: Upload },
-        { href: '/user/download', label: 'My Tasks', icon: Download },
+        { href: '/user/download', label: 'Task Tracker', icon: Download },
     ];
 
     const adminLinks = [
@@ -59,7 +60,7 @@ export default function DashboardLayout({
     const navLinks = user.role === 'ADMIN' ? [...adminLinks, ...userLinks] : userLinks;
 
     return (
-        <div className="min-h-screen flex">
+        <div className="min-h-screen flex bg-grid">
             {/* Sidebar */}
             <aside
                 className="w-64 flex flex-col border-r fixed h-full z-20"
@@ -83,7 +84,7 @@ export default function DashboardLayout({
                         </div>
                         <div>
                             <h1 className="text-sm font-bold" style={{ color: '#f1f5f9' }}>BFV Portal</h1>
-                            <p className="text-[10px] mono-text" style={{ color: '#475569' }}>v1.0 · ENCRYPTED</p>
+                            <p className="text-[10px] mono-text" style={{ color: '#475569' }}>v2.0 · ENCRYPTED</p>
                         </div>
                     </Link>
                 </div>
@@ -151,9 +152,14 @@ export default function DashboardLayout({
             </aside>
 
             {/* Main content */}
-            <main className="flex-1 ml-64">
-                <div className="p-8 max-w-7xl mx-auto">
+            <main className="flex-1 ml-64 flex flex-col min-h-screen">
+                <div className="p-8 max-w-7xl mx-auto flex-1 w-full">
                     {children}
+                </div>
+                
+                {/* Platform Documentation Footer */}
+                <div className="w-full mt-auto">
+                    <PlatformDetails />
                 </div>
             </main>
         </div>

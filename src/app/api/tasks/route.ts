@@ -12,14 +12,23 @@ export async function GET() {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const whereClause = user.role === 'ADMIN' ? {} : { userId: user.userId };
+        // Admin sees all tasks.
+        // Users see tasks they sent OR tasks they received.
+        const whereClause = user.role === 'ADMIN'
+            ? {}
+            : {
+                OR: [
+                    { senderId: user.userId },
+                    { receiverId: user.userId }
+                ]
+            };
 
         const tasks = await prisma.task.findMany({
+            // @ts-ignore
             where: whereClause,
             include: {
-                user: {
-                    select: { name: true, email: true },
-                },
+                sender: { select: { name: true, email: true } },
+                receiver: { select: { name: true, email: true } },
             },
             orderBy: { createdAt: 'desc' },
         });
@@ -43,12 +52,31 @@ export async function POST(request: NextRequest) {
 
         const formData = await request.formData();
         const file = formData.get('image') as File | null;
+        const receiverEmail = formData.get('receiverEmail') as string | null;
 
         if (!file) {
-            return NextResponse.json(
-                { error: 'Image file is required' },
-                { status: 400 }
-            );
+            return NextResponse.json({ error: 'Image file is required' }, { status: 400 });
+        }
+
+        if (!receiverEmail) {
+            return NextResponse.json({ error: 'Receiver email is required' }, { status: 400 });
+        }
+
+        // Validate receiver
+        const receiver = await prisma.user.findUnique({
+            where: { email: receiverEmail }
+        });
+
+        if (!receiver) {
+            return NextResponse.json({ error: 'Recipient not found' }, { status: 404 });
+        }
+
+        if (receiver.id === user.userId) {
+            return NextResponse.json({ error: 'Cannot send files to yourself' }, { status: 400 });
+        }
+
+        if (receiver.role === 'ADMIN') {
+            return NextResponse.json({ error: 'Cannot send files to Admin accounts' }, { status: 400 });
         }
 
         // Validate file type
@@ -68,7 +96,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Create unique filename
+        // Create unique filename based on UUID
         const ext = path.extname(file.name);
         const uniqueId = uuidv4();
         const fileName = `${uniqueId}${ext}`;
@@ -88,13 +116,13 @@ export async function POST(request: NextRequest) {
             throw new Error(`Storage upload failed: ${storageError.message}`);
         }
 
-        // Create task in database
+        // Create task in database with sender and receiver
         const task = await prisma.task.create({
             data: {
-                userId: user.userId,
+                senderId: user.userId,
+                receiverId: receiver.id,
                 originalImageUrl: `images/${fileName}`,
-                originalFileName: file.name,
-                status: 'PENDING',
+                status: 'PENDING_ADMIN',
             },
         });
 

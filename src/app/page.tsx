@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Shield, Users, ArrowRight, Database, Fingerprint, UploadCloud, Cpu, Cloud, Key } from 'lucide-react';
+import PlatformDetails from '@/components/PlatformDetails';
 
 export default function LandingPage() {
   return (
@@ -88,10 +89,10 @@ export default function LandingPage() {
           <div className="hidden lg:block absolute top-8 left-[12%] right-[12%] h-0.5 bg-gradient-to-r from-cyan-200 via-blue-200 to-emerald-200 z-0" />
           
           {[
-            { icon: UploadCloud, title: '1. Payload Upload', desc: 'Raw image is securely transmitted to the portal', color: 'text-cyan-600', bg: 'bg-cyan-50 border-cyan-100 shadow-cyan-100/50' },
-            { icon: Cpu, title: '2. FPGA Encryption', desc: 'Hardware-accelerated BFV homomorphic encryption', color: 'text-blue-600', bg: 'bg-blue-50 border-blue-100 shadow-blue-100/50' },
-            { icon: Cloud, title: '3. Cloud Transport', desc: 'Encrypted ciphertext is routed via secure cloud', color: 'text-indigo-600', bg: 'bg-indigo-50 border-indigo-100 shadow-indigo-100/50' },
-            { icon: Key, title: '4. FPGA Decryption', desc: 'Payload decrypted on edge node using cipher key', color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-100 shadow-emerald-100/50' }
+            { icon: UploadCloud, title: '1. Initiate Transfer', desc: 'Sender authenticates recipient identity. Payload is submitted into the zero-knowledge ingest zone.', color: 'text-cyan-600', bg: 'bg-cyan-50 border-cyan-100 shadow-cyan-100/50' },
+            { icon: Shield, title: '2. Homomorphic Pass', desc: 'Data undergoes Brakerski-Fan-Vercauteren (BFV) polynomial encryption mapping pixels to ciphertexts.', color: 'text-blue-600', bg: 'bg-blue-50 border-blue-100 shadow-blue-100/50' },
+            { icon: Cpu, title: '3. Hardware Acceleration', desc: 'Encrypted data is processed by FPGA logic arrays performing secure operations without decryption.', color: 'text-indigo-600', bg: 'bg-indigo-50 border-indigo-100 shadow-indigo-100/50' },
+            { icon: Key, title: '4. Receiver FPGA Decryption', desc: 'Receiver securely decrypts the .mem file on their edge node using dedicated FPGA decryption hardware.', color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-100 shadow-emerald-100/50' }
           ].map((step, i) => (
             <div key={i} className="relative z-10 flex flex-col items-center text-center group">
               <div className={`w-16 h-16 rounded-2xl ${step.bg} flex items-center justify-center mb-5 transition-all duration-300 group-hover:-translate-y-2 group-hover:shadow-lg border bg-white shadow-sm ring-4 ring-white`}>
@@ -104,8 +105,13 @@ export default function LandingPage() {
         </div>
       </div>
       
+      {/* Detailed Platform Overview Section */}
+      <div className="w-full relative z-10 bg-white shadow-t-xl shadow-cyan-900/5 clip-path-top">
+        <PlatformDetails />
+      </div>
+
       {/* Footer Info */}
-      <div className="relative z-10 flex items-center justify-center gap-3 text-xs text-slate-400 font-mono tracking-widest uppercase opacity-70 mt-auto pt-8">
+      <div className="relative z-10 flex items-center justify-center gap-3 text-xs text-slate-400 font-mono tracking-widest uppercase opacity-70 mt-auto pt-8 mb-8 pb-8">
         <Shield className="w-3.5 h-3.5" />
         <span>FIPS 140-3 Validated</span>
         <span>•</span>
